@@ -184,7 +184,7 @@ service cloud.firestore {
 
 ---
 
-## 👩‍💻 Author
+## 👩‍💻 Authors
 
 **Priya Jenita J**
 
