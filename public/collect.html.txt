@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collect Food</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    body {
+      background-image: url('images/green-food-bg.jpg');
+      background-size: cover;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 25px;
+      background-color: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2f6627;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    .card {
+      background-color: #f0f9f0;
+      padding: 15px 20px;
+      border-left: 5px solid #4CAF50;
+      border-radius: 10px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    }
+
+    .food-name {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2f6627;
+    }
+
+    .location {
+      margin-top: 5px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .quantity, .shelf-life {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 4px 10px;
+      background-color: #c8f7c5;
+      color: #2f6627;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 14px;
+      margin-right: 5px;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      background-color: rgba(255,255,255,0.95);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    nav h1 {
+      margin: 0;
+      color: #2f6627;
+    }
+
+    nav .nav-links a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: #2f6627;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+
+    nav .nav-links a:hover {
+      color: #4CAF50;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h1>Collect Food</h1>
+    <div class="nav-links">
+      <a href="donate.html">Donate Food</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2>Available Food Items</h2>
+    <div id="foodList" class="grid"></div>
+  </div>
+
+  <script type="module" src="js/collect.js"></script>
+</body>
+</html>

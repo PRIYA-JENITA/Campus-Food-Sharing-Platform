@@ -1,0 +1,91 @@
+import { db, auth } from "../firebase-config.js";
+import { collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+// ✅ EmailJS import and initialization
+import emailjs from "https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.es.min.js";
+const serviceID = "service_x3a7gxy"; // Your EmailJS Service ID
+const templateID_donation = "template_y27sogl"; // Your donation template ID
+const publicKey = "your_public_key_here"; // Replace with your EmailJS Public Key
+emailjs.init(publicKey);
+
+// Elements
+const foodNameInput = document.getElementById("foodName");
+const locationInput = document.getElementById("locationInput");
+const quantityInput = document.getElementById("quantityInput");
+const shelfLifeInput = document.getElementById("shelfLifeInput");
+const postFoodBtn = document.getElementById("postFood");
+const foodList = document.getElementById("foodList");
+
+// Load all food posts
+async function loadFoodPosts() {
+  const snapshot = await getDocs(collection(db, "food_posts"));
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+// Display available food items
+async function displayFoodList() {
+  const data = await loadFoodPosts();
+  foodList.innerHTML = "";
+  data.sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt))
+      .forEach(d => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="food-name">${d.name}</div>
+          <div class="location">📍 ${d.location}</div>
+          <div class="quantity">Quantity: ${d.quantity}</div>
+          <div class="shelf-life">Shelf Life: ${d.shelfLife}</div>
+        `;
+        foodList.appendChild(card);
+      });
+}
+
+// Add new food post
+postFoodBtn.addEventListener("click", async () => {
+  const name = foodNameInput.value.trim();
+  const location = locationInput.value.trim();
+  const quantity = parseInt(quantityInput.value);
+  const shelfLife = shelfLifeInput.value.trim();
+
+  if (!name || !location || !quantity || !shelfLife) {
+    return alert("Please fill in all fields before posting!");
+  }
+
+  try {
+    await addDoc(collection(db, "food_posts"), {
+      name,
+      location,
+      quantity,
+      shelfLife,
+      postedAt: new Date().toISOString()
+    });
+
+    alert("✅ Food item posted successfully!");
+
+    // Get the logged-in user's email
+    const donorEmail = auth.currentUser ? auth.currentUser.email : null;
+    if (donorEmail) {
+      // Send donation confirmation email
+      emailjs.send(serviceID, templateID_donation, {
+        to_email: donorEmail,
+        message: `Thank you for donating ${quantity} of ${name}!`
+      })
+      .then(() => console.log("Donation email sent"))
+      .catch(err => console.error("Email failed:", err));
+    }
+
+    // Clear input fields
+    foodNameInput.value = "";
+    locationInput.value = "";
+    quantityInput.value = "";
+    shelfLifeInput.value = "";
+
+    displayFoodList();
+  } catch (error) {
+    console.error("Error posting food:", error);
+    alert("Error posting food. Please try again!");
+  }
+});
+
+// Initialize page
+displayFoodList();

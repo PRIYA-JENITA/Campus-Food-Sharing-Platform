@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+  
+  <style>
+    body {
+      background-image: url('images/green-food-bg.jpg');
+      background-size: cover;
+      background-position: center;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    nav {
+      background-color: #4CAF50;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+    }
+
+    nav h1 { margin: 0; font-size: 24px; font-weight: bold; }
+
+    .nav-links { display: flex; gap: 15px; }
+
+    .nav-btn {
+      background-color: white;
+      color: #4CAF50;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      text-decoration: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .nav-btn:hover { background-color: #f2f2f2; }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      max-width: 1400px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h2 { margin-bottom: 20px; }
+    h3 { margin-top: 40px; }
+
+    /* KPI cards */
+    .kpi-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .kpi-card {
+      flex: 1;
+      min-width: 150px;
+      background-color: #EAF8EA;
+      padding: 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      color: #2e7d32;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .kpi-card span {
+      font-size: 28px;
+      margin-top: 5px;
+    }
+
+    /* Grid for food items - 8 columns */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background-color: #EAF8EA;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: left;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      min-width: 0;
+    }
+
+    .food-name {
+      font-weight: bold;
+      color: #2e7d32;
+      font-size: 16px;
+    }
+
+    .location, .quantity, .collected {
+      margin-top: 5px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    canvas {
+      margin-top: 20px;
+    }
+  </style>
+
+  <!-- Chart.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <nav>
+    <h1>Dashboard</h1>
+    <div class="nav-links">
+      <a href="donate.html" class="nav-btn">Donate Food</a>
+      <a href="collect.html" class="nav-btn">Collect Food</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2>Your Dashboard</h2>
+
+    <!-- KPI Cards -->
+    <div class="kpi-container">
+      <div class="kpi-card">
+        Total Posts
+        <span id="totalPosts">0</span>
+      </div>
+      <div class="kpi-card">
+        Total Available
+        <span id="totalAvailable">0</span>
+      </div>
+      <div class="kpi-card">
+        Total Collected
+        <span id="totalCollected">0</span>
+      </div>
+      <div class="kpi-card">
+        Active Locations
+        <span id="activeLocations">0</span>
+      </div>
+    </div>
+
+    <!-- Bar chart for collected quantities -->
+    <h3>Collected Food Analytics</h3>
+    <canvas id="collectedChart" width="400" height="150"></canvas>
+
+    <!-- Grid for food items -->
+    <h3>Available Food Items</h3>
+    <div id="dashboardData" class="grid"></div>
+  </div>
+
+  <!-- Firebase & Firestore -->
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
+    async function loadDashboard() {
+      const dashboardData = document.getElementById('dashboardData');
+      const snapshot = await getDocs(collection(db, 'food_posts'));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      dashboardData.innerHTML = '';
+
+      if (data.length === 0) {
+        dashboardData.innerHTML = '<p>No food posts available.</p>';
+        return;
+      }
+
+      // Compute KPIs
+      const totalPosts = data.length;
+      const totalAvailable = data.reduce((sum, d) => sum + (d.quantity || 0), 0);
+      const totalCollected = data.reduce((sum, d) => sum + (d.collectedQuantity || 0), 0);
+      const activeLocations = new Set(data.map(d => d.location)).size;
+
+      document.getElementById('totalPosts').textContent = totalPosts;
+      document.getElementById('totalAvailable').textContent = totalAvailable;
+      document.getElementById('totalCollected').textContent = totalCollected;
+      document.getElementById('activeLocations').textContent = activeLocations;
+
+      // Render food cards
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="food-name">${item.name}</div>
+          <div class="location">Location: ${item.location}</div>
+          <div class="quantity">Quantity: ${item.quantity || 0}</div>
+          <div class="collected">Collected: ${item.collectedQuantity || 0}</div>
+        `;
+        dashboardData.appendChild(card);
+      });
+
+      // Render Chart.js bar chart
+      const ctx = document.getElementById('collectedChart').getContext('2d');
+      const labels = data.map(d => d.name);
+      const collectedData = data.map(d => d.collectedQuantity || 0);
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Collected Quantity',
+            data: collectedData,
+            backgroundColor: 'rgba(76, 175, 80, 0.6)',
+            borderColor: 'rgba(76, 175, 80, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: 'Collected Food Quantities' }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    // Load dashboard on page load
+    loadDashboard();
+  </script>
+</body>
+</html>
