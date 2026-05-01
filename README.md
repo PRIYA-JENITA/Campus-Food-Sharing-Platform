@@ -60,35 +60,6 @@ A web-based platform to reduce food waste within campus by enabling students and
 
 ---
 
-## 📂 Project Structure
-
-```
-campus-food-sharing/
-│
-├── public/
-│   ├── index.html        # Login page
-│   ├── donate.html       # Donate food page
-│   ├── collect.html      # Collect food page
-│   ├── dashboard.html    # Dashboard page
-│   │
-│   ├── css/
-│   │   └── style.css
-│   │
-│   ├── js/
-│   │   ├── firebase-config.js
-│   │   ├── app.js
-│   │   ├── collect.js
-│   │   └── dashboard.js
-│   │
-│   └── images/
-│
-├── firebase.json
-├── .firebaserc
-└── README.md
-```
-
----
-
 ## ⚙️ Setup Instructions
 
 ### 1️⃣ Clone the Repository
